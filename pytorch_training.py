@@ -418,3 +418,4 @@ def train(config):
     run_training_get_results(
         model, trainloader, testloader, optim_func, loss_fn, args.epochs, device, target_accuracy=args.accuracy
     )
+    return model, testset

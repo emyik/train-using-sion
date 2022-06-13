@@ -2,7 +2,10 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import matplotlib.pyplot as plt
+import numpy as np
 import torch
+import torchvision
 from torchvision import transforms
 import os
 
@@ -62,3 +65,46 @@ def infinicache_collate(batch):
     new_images = torch.cat(images, 0)
     new_labels = torch.cat(labels, 0)
     return new_images, new_labels
+
+###############################################################################
+# Visualization and Prediction
+###############################################################################
+
+CLASSES = (
+    'plane', 'car', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship',
+    'truck')
+
+def get_class(id):
+    return CLASSES[id]
+
+def show_images(images, labels):
+    def imshow(img):
+        img = img / 2 + 0.5
+        npimg = img.numpy()
+        plt.imshow(np.transpose(npimg, (1, 2, 0)))
+        plt.show()
+
+    imshow(torchvision.utils.make_grid(images))
+    print("Labels: ", labels)
+    print("Labels: ",
+          " ".join(f"{get_class(label):5s}" for label in labels))
+
+def predict(model, images):
+    outputs, _ = model(images)
+    _, predictions = torch.max(outputs, 1)
+
+    print("Predictions: ", predictions)
+    print("Predictions: ",
+          " ".join(f"{get_class(prediction):5s}" for prediction in predictions))
+    return predictions
+
+def predict_and_display(model, images, labels):
+    show_images(images, labels)
+    print()
+    predictions = predict(model, images)
+    print()
+    num_correct = predictions.eq(labels).sum().item()
+    num_total = len(images)
+    print(
+        f"Predicted {num_correct}/{num_total} correctly. "
+        f"Accuracy: {num_correct / num_total:.0%}.")
