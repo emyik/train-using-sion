@@ -284,8 +284,10 @@ def train(config):
 
     if args.output != "":
         output = args.prefix + args.output
+        global DATALOG
         DATALOG = logging_utils.get_logger(
             DATALOG.name, logging_utils.set_file_handler(output))
+        DATALOG.info("type,epoch,start,loading,duration,value1,value2")
 
     img_transform = utils.normalize_image(True)
     test_transform = utils.normalize_image(True)

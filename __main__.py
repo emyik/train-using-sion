@@ -45,6 +45,7 @@ def main():
   parser.add_argument("--workers", action='store', type=int, help="Number of workers.", default=0)
   parser.add_argument("-o", "--output", action='store', type=str, help="Output file", default="")
   parser.add_argument("--prefix", action='store', type=str, help="Output prefix", default="")
+  parser.add_argument("--test_mode", action='store_true', help="Test only")
 
   args, _ = parser.parse_known_args()
   train(args.__dict__)
