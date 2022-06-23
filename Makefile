@@ -11,3 +11,9 @@ train-cifar:
 	python3 ./__main__.py --dataset cifar --batch 64 --model resnet -o ./data/$(DATE)/cifar_resnet_buildin.csv $(PARAMS) 1>./data/$(DATE).log 2>&1 &
 	@echo "Data output to data/$(DATE)/cifar_resnet_buildin.csv"
 	@echo "Run \"tail -f ./data/$(DATE).log\" to see the training progress"
+
+train-cifar-s3:
+	@mkdir -p data/$(DATE)
+	python3 ./__main__.py --dataset cifar --batch 64 --model resnet --loader s3 -o ./data/$(DATE)/cifar_resnet_s3.csv $(PARAMS) 1>./data/$(DATE).log 2>&1 &
+	@echo "Data output to data/$(DATE)/cifar_resnet_buildin.csv"
+	@echo "Run \"tail -f ./data/$(DATE).log\" to see the training progress"

@@ -424,7 +424,7 @@ def train(config):
         num_classes = 365
     model, loss_fn, optim_func = initialize_model(
         args.model, 3, num_classes=num_classes, device=device)
-    print("Running training with the {}".format(args.loader))
+    print("Running training from {} dataset on {}".format(args.loader if args.loader != "" else "buildin", device))
     if args.benchmark:
         args.epochs = 0
     run_training_get_results(

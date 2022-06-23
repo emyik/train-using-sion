@@ -35,6 +35,8 @@ def main():
   parser.add_argument("--s3_source", action='store', type=str, help="Load dataset from S3 and specifiy the bucket.", default="cifar10-infinicache")
   parser.add_argument("--s3_train", action='store', type=str, help="Load training set from S3 and specifiy the bucket.", default="tianium.cifar10.training")
   parser.add_argument("--s3_test", action='store', type=str, help="Load test set from S3 and specifiy the bucket.", default="tianium.cifar10.test")
+  parser.add_argument("--aws_key", action='store', type=str, help="AWS access key id.", default="")
+  parser.add_argument("--aws_secret", action='store', type=str, help="AWS secret access key.", default="")
   parser.add_argument("--loader", action='store', type=str, help="Dataloader used, choosing from disk, s3, or infinicache.", default="")
   parser.add_argument("--model", action='store', type=str, help="Pretrained model, choosing from resnet, efficientnet or densenet.", default="")
   parser.add_argument("--batch", action='store', type=int, help="The size of batch.", default=64)
