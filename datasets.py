@@ -27,6 +27,8 @@ LOGGER = logging_utils.initialize_logger()
 DATALOG = logging_utils.get_logger("datalog")
 INITIALIZE_WORKERS = 10
 
+AWS_SESSION = boto3
+
 class LoadTimes:
     def __init__(self, name: str):
         self.name = name
@@ -82,7 +84,7 @@ class DatasetDisk(Dataset):
 
             # Download
             if s3_bucket != "":
-                self.s3_client = boto3.client("s3", config=Config(signature_version=UNSIGNED))   
+                self.s3_client = AWS_SESSION.client("s3", config=Config(signature_version=UNSIGNED))   
                 self.download_from_s3(s3_bucket, localpath.absolute())  # We probably don't need this since the AWS CLI is faster\
             
             # Expand
@@ -118,7 +120,7 @@ class DatasetDisk(Dataset):
         """
         First need to download all images from S3 to Disk to use for training.
         """
-        s3_client = boto3.client("s3", config=Config(signature_version=UNSIGNED))
+        s3_client = AWS_SESSION.client("s3", config=Config(signature_version=UNSIGNED))
         paginator = s3_client.get_paginator("list_objects_v2")
         filenames = []
         for page in paginator.paginate(Bucket=s3_path):
@@ -145,7 +147,7 @@ class BatchS3Dataset(Dataset):
         label_idx: int = 0,
         img_transform: Optional[torchvision.transforms.Compose] = None,
     ):
-        self.s3_client = boto3.client("s3", config=Config(signature_version=UNSIGNED))
+        self.s3_client = AWS_SESSION.client("s3", config=Config(signature_version=UNSIGNED))
         self.bucket_name = bucket_name
         self.dataset_name = dataset_name
         if self.dataset_name is None:

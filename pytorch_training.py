@@ -7,11 +7,13 @@ import sys
 import os
 import time
 import numpy as np
+import boto3
 
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
 
+import datasets
 from datasets import DatasetBuildin, DatasetDisk, BatchS3Dataset, Subset
 import cnn_models
 import logging_utils
@@ -43,6 +45,8 @@ def get_config(config=None):
     config.setdefault("s3_source", "")
     config.setdefault("s3_train", "")
     config.setdefault("s3_test", "")
+    config.setdefault("aws_key", "")
+    config.setdefault("aws_secret", "")
     config.setdefault("loader", "")
     config.setdefault("model", "")
     config.setdefault("batch", 64)
@@ -282,6 +286,12 @@ def train(config):
     if args.s3_test == "None":
         args.s3_test = ""
 
+    if args.aws_key != "" and args.aws_secret != "":
+        datasets.AWS_SESSION = boto3.Session(
+            aws_access_key_id=args.aws_key,
+            aws_secret_access_key=args.aws_secret
+        )
+
     if args.output != "":
         output = args.prefix + args.output
         global DATALOG
@@ -297,7 +307,7 @@ def train(config):
     trainloader, testloader = None, None
     print(f"Config: {args.__dict__}")
 
-        # Define the dataset
+    # Define the dataset
     loadtestset = (args.s3_test != "")
     if args.loader == "":
         from torchvision import datasets as buildins
