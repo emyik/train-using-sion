@@ -9,9 +9,16 @@ import time
 import numpy as np
 import boto3
 
+import ray.train.torch
 import torch
-import torch.nn as nn
-from torch.utils.data import DataLoader
+import torchvision
+from filelock import FileLock
+from ray import train
+from torch import nn, optim
+from torch.nn.modules.utils import consume_prefix_in_state_dict_if_present
+from torch.utils.data import DataLoader, Subset
+from torchvision import datasets, transforms
+from torchvision import models
 
 import datasets
 from datasets import DatasetBuildin, DatasetDisk, BatchS3Dataset, Subset
@@ -234,6 +241,20 @@ def run_training_get_results(
             if accuracy >= target_accuracy:
                 LOGGER.info("Accuracy reached.")
                 break
+        
+        # CHANGE 4: Report metrics.
+        train.report(epoch=epoch, lr=scheduler.get_last_lr()[0],
+                     **loading_time, **validation_time)
+
+        optimizer_state_dict = optim_func.state_dict()
+        model_state_dict = model.state_dict()
+        consume_prefix_in_state_dict_if_present(model_state_dict, "module.")
+        # CHANGE 5: Enable checkpointing.
+        train.save_checkpoint(epoch=epoch,
+                              accuracy=accuracy,
+                              model_state_dict=model_state_dict,
+                              optimizer_state_dict=optimizer_state_dict
+                              )
 
 
 def initialize_model(
@@ -399,6 +420,13 @@ def train(config):
     # Define the dataloader
     collate_fn = None
     batch = args.batch
+
+    worker_batch_size = int(batch)
+    # CHANGE 1: Split global batch size amongst workers.
+    worker_batch_size = batch // 2
+    print(f"World size: {2}. ",
+          f"Worker batch size: {worker_batch_size}.")
+
     if isinstance(trainset, BatchS3Dataset):
         collate_fn = utils.infinicache_collate
         batch = args.batch/args.minibatch
@@ -414,6 +442,10 @@ def train(config):
         testloader = DataLoader(
             testset, batch_size=int(batch), shuffle=True, num_workers=args.workers, collate_fn=collate_fn, pin_memory=True
         )
+    # CHANGE 3: Shard your data.
+    trainloader = ray.train.torch.prepare_data_loader(trainloader)
+    if loadtestset:
+        testloader = ray.train.torch.prepare_data_loader(testloader)
 
     # Define the model
     device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -424,6 +456,8 @@ def train(config):
         num_classes = 365
     model, loss_fn, optim_func = initialize_model(
         args.model, 3, num_classes=num_classes, device=device)
+    # CHANGE 2: Distribute your model.
+    model = ray.train.torch.prepare_model(model)
     print("Running training from {} dataset on {}".format(args.loader if args.loader != "" else "buildin", device))
     if args.benchmark:
         args.epochs = 0
