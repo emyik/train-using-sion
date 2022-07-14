@@ -246,6 +246,7 @@ def run_training_get_results(
         train.report(epoch=epoch, lr=scheduler.get_last_lr()[0],
                      **loading_time, **validation_time)
 
+        # TODO: We use customized model that extends built-in pytorch model, which is not visisble to ray-train checkpointer. Try skipping checkpointing for now.
         optimizer_state_dict = optim_func.state_dict()
         model_state_dict = model.state_dict()
         consume_prefix_in_state_dict_if_present(model_state_dict, "module.")
@@ -421,6 +422,7 @@ def train(config):
     collate_fn = None
     batch = args.batch
 
+    # TODO: Here we defined worker_batch_size, where did you use it?
     worker_batch_size = int(batch)
     # CHANGE 1: Split global batch size amongst workers.
     worker_batch_size = batch // 2
