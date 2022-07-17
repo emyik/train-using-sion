@@ -247,7 +247,7 @@ def run_training_get_results(
                      **loading_time, **validation_time)
 
         # TODO: We use customized model that extends built-in pytorch model, which is not visisble to ray-train checkpointer. Try skipping checkpointing for now.
-        optimizer_state_dict = optim_func.state_dict()
+        '''optimizer_state_dict = optim_func.state_dict()
         model_state_dict = model.state_dict()
         consume_prefix_in_state_dict_if_present(model_state_dict, "module.")
         # CHANGE 5: Enable checkpointing.
@@ -255,7 +255,7 @@ def run_training_get_results(
                               accuracy=accuracy,
                               model_state_dict=model_state_dict,
                               optimizer_state_dict=optimizer_state_dict
-                              )
+                              )'''
 
 
 def initialize_model(
@@ -438,11 +438,11 @@ def train(config):
         if loadtestset:
             testset = Subset(testset, list(range(args.batch)))
     trainloader = DataLoader(
-        trainset, batch_size=int(batch), shuffle=True, num_workers=args.workers, collate_fn=collate_fn, pin_memory=True
+        trainset, batch_size=worker_batch_size, shuffle=True, num_workers=args.workers, collate_fn=collate_fn, pin_memory=True
     )
     if loadtestset:
         testloader = DataLoader(
-            testset, batch_size=int(batch), shuffle=True, num_workers=args.workers, collate_fn=collate_fn, pin_memory=True
+            testset, batch_size=worker_batch_size, shuffle=True, num_workers=args.workers, collate_fn=collate_fn, pin_memory=True
         )
     # CHANGE 3: Shard your data.
     trainloader = ray.train.torch.prepare_data_loader(trainloader)
