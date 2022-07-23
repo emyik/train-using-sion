@@ -9,7 +9,6 @@ from threading import Lock
 from functools import partial
 from random import randint
 
-import boto3
 from botocore import UNSIGNED
 from botocore.config import Config
 import numpy as np
@@ -27,7 +26,13 @@ LOGGER = logging_utils.initialize_logger()
 DATALOG = logging_utils.get_logger("datalog")
 INITIALIZE_WORKERS = 10
 
-AWS_SESSION = boto3
+AWS_SESSION = None
+
+def init_s3():
+    global AWS_SESSION
+    if AWS_SESSION is None:
+        import boto3
+        AWS_SESSION = boto3
 
 class LoadTimes:
     def __init__(self, name: str):
@@ -84,6 +89,7 @@ class DatasetDisk(Dataset):
 
             # Download
             if s3_bucket != "":
+                init_s3()
                 self.s3_client = AWS_SESSION.client("s3", config=Config(signature_version=UNSIGNED))   
                 self.download_from_s3(s3_bucket, localpath.absolute())  # We probably don't need this since the AWS CLI is faster\
             
@@ -147,6 +153,7 @@ class BatchS3Dataset(Dataset):
         label_idx: int = 0,
         img_transform: Optional[torchvision.transforms.Compose] = None,
     ):
+        init_s3()
         self.s3_client = AWS_SESSION.client("s3", config=Config(signature_version=UNSIGNED))
         self.bucket_name = bucket_name
         self.dataset_name = dataset_name
