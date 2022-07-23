@@ -9,8 +9,6 @@ from threading import Lock
 from functools import partial
 from random import randint
 
-from botocore import UNSIGNED
-from botocore.config import Config
 import numpy as np
 import torch
 import torchvision
@@ -90,6 +88,8 @@ class DatasetDisk(Dataset):
             # Download
             if s3_bucket != "":
                 init_s3()
+                from botocore import UNSIGNED
+                from botocore.config import Config
                 self.s3_client = AWS_SESSION.client("s3", config=Config(signature_version=UNSIGNED))   
                 self.download_from_s3(s3_bucket, localpath.absolute())  # We probably don't need this since the AWS CLI is faster\
             
@@ -126,8 +126,7 @@ class DatasetDisk(Dataset):
         """
         First need to download all images from S3 to Disk to use for training.
         """
-        s3_client = AWS_SESSION.client("s3", config=Config(signature_version=UNSIGNED))
-        paginator = s3_client.get_paginator("list_objects_v2")
+        paginator = self.s3_client.get_paginator("list_objects_v2")
         filenames = []
         for page in paginator.paginate(Bucket=s3_path):
             for content in page.get("Contents"):
@@ -154,6 +153,8 @@ class BatchS3Dataset(Dataset):
         img_transform: Optional[torchvision.transforms.Compose] = None,
     ):
         init_s3()
+        from botocore import UNSIGNED
+        from botocore.config import Config
         self.s3_client = AWS_SESSION.client("s3", config=Config(signature_version=UNSIGNED))
         self.bucket_name = bucket_name
         self.dataset_name = dataset_name
