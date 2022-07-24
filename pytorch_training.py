@@ -7,7 +7,6 @@ import sys
 import os
 import time
 import numpy as np
-import boto3
 
 import torch
 import torch.nn as nn
@@ -287,6 +286,7 @@ def train(config):
         args.s3_test = ""
 
     if args.aws_key != "" and args.aws_secret != "":
+        import boto3
         datasets.AWS_SESSION = boto3.Session(
             aws_access_key_id=args.aws_key,
             aws_secret_access_key=args.aws_secret
