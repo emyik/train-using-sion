@@ -44,8 +44,10 @@ def get_config(config=None):
     config.setdefault("s3_source", "")
     config.setdefault("s3_train", "")
     config.setdefault("s3_test", "")
-    config.setdefault("aws_key", "")
-    config.setdefault("aws_secret", "")
+    # config.setdefault("aws_key", "")
+    # config.setdefault("aws_secret", "")
+    config.setdefault("ibm_key", "")
+    config.setdefault("ibm_secret", "")
     config.setdefault("loader", "")
     config.setdefault("model", "")
     config.setdefault("batch", 64)
@@ -285,11 +287,17 @@ def train(config):
     if args.s3_test == "None":
         args.s3_test = ""
 
-    if args.aws_key != "" and args.aws_secret != "":
-        import boto3
-        datasets.AWS_SESSION = boto3.Session(
-            aws_access_key_id=args.aws_key,
-            aws_secret_access_key=args.aws_secret
+    # if args.aws_key != "" and args.aws_secret != "":
+    #     import boto3
+    #     datasets.AWS_SESSION = boto3.Session(
+    #         aws_access_key_id=args.aws_key,
+    #         aws_secret_access_key=args.aws_secret
+    #     )
+    if args.ibm_key != "" and args.ibm_secret != "":
+        import ibm_boto3
+        datasets.IBM_SESSION = ibm_boto3.Session(
+            ibm_access_key_id=args.ibm_key,
+            ibm_secret_access_key=args.ibm_secret
         )
 
     if args.output != "":

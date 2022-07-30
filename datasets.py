@@ -24,13 +24,18 @@ LOGGER = logging_utils.initialize_logger()
 DATALOG = logging_utils.get_logger("datalog")
 INITIALIZE_WORKERS = 10
 
-AWS_SESSION = None
+#AWS_SESSION = None
+IBM_SESSION = None
 
 def init_s3():
-    global AWS_SESSION
-    if AWS_SESSION is None:
-        import boto3
-        AWS_SESSION = boto3
+    # global AWS_SESSION
+    # if AWS_SESSION is None:
+    #     import boto3
+    #     AWS_SESSION = boto3
+    global IBM_SESSION
+    if IBM_SESSION is None:
+        import ibm_boto3
+        IBM_SESSION = ibm_boto3
 
 class LoadTimes:
     def __init__(self, name: str):
@@ -88,9 +93,21 @@ class DatasetDisk(Dataset):
             # Download
             if s3_bucket != "":
                 init_s3()
-                from botocore import UNSIGNED
-                from botocore.config import Config
-                self.s3_client = AWS_SESSION.client("s3", config=Config(signature_version=UNSIGNED))   
+                # from botocore import UNSIGNED
+                # from botocore.config import Config
+                from ibm_botocore.client import Config
+                # self.s3_client = AWS_SESSION.client("s3", config=Config(signature_version=UNSIGNED))
+                cos_credentials={
+                    # credentials
+                }
+                auth_endpoint = 'https://iam.bluemix.net/oidc/token'
+                service_endpoint = 'https://s3-api.us-geo.objectstorage.softlayer.net'
+                self.s3_client = IBM_SESSION.client('s3',
+                         ibm_api_key_id=cos_credentials['apikey'],
+                         ibm_service_instance_id=cos_credentials['resource_instance_id'],
+                         ibm_auth_endpoint=auth_endpoint,
+                         config=Config(signature_version='oauth'),
+                         endpoint_url=service_endpoint)   
                 self.download_from_s3(s3_bucket, localpath.absolute())  # We probably don't need this since the AWS CLI is faster\
             
             # Expand
@@ -153,9 +170,21 @@ class BatchS3Dataset(Dataset):
         img_transform: Optional[torchvision.transforms.Compose] = None,
     ):
         init_s3()
-        from botocore import UNSIGNED
-        from botocore.config import Config
-        self.s3_client = AWS_SESSION.client("s3", config=Config(signature_version=UNSIGNED))
+        # from botocore import UNSIGNED
+        # from botocore.config import Config
+        from ibm_botocore.client import Config
+        # self.s3_client = AWS_SESSION.client("s3", config=Config(signature_version=UNSIGNED))
+        cos_credentials={
+            
+        }
+        auth_endpoint = 'https://iam.bluemix.net/oidc/token'
+        service_endpoint = 'https://s3-api.us-geo.objectstorage.softlayer.net'
+        self.s3_client = IBM_SESSION.client('s3',
+                         ibm_api_key_id=cos_credentials['apikey'],
+                         ibm_service_instance_id=cos_credentials['resource_instance_id'],
+                         ibm_auth_endpoint=auth_endpoint,
+                         config=Config(signature_version='oauth'),
+                         endpoint_url=service_endpoint)   
         self.bucket_name = bucket_name
         self.dataset_name = dataset_name
         if self.dataset_name is None:
