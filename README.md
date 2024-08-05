@@ -1,35 +1,40 @@
-# Training using SION
+# Optimizing ResNet-50 CNN Data Loading and Training Speeds on CIFAR-10 Dataset
 
-## Deployment
+## Project Decription
+The goal of this project is to evaluate different factors affecting machine learning data loading and training speeds. We optimized the ResNet-50 CNN training on the CIFAR-10 dataset, with results depicted in `plotData.ipynb`. 
 
-Install Python 3.9
-Install Visual Studio Code
+Different types of trainings tested:
+* Local CPU loading data from built-in version provided by torchvision.
+* Google Colab T4 GPU loading data from built-in version provided by torchversion.
+* Google Colab T4 GPU and loading dataset from S3.
+* IBM VM IBM COS.
+* IBM VM IBM COS with workers.
+
+
+## How To Run Project
+
+Deployment: Install Python 3.9 and Visual Studio Code.
 
 ~~~
 pip3 install -r requirements.txt
 ~~~
 
-## Play
+Use Visual Studio to run train_cifar.ipynb.
 
-Using Visual Studio to open train_cifar.ipynb, have fun.
-
-## Run experiment
-
-Test training:
+To run the experiment:
 
 ~~~
 make test
 ~~~
 
-GPU Training. If GPU is not available, CPU will be used:
+To run GPU Training (if GPU is not available, CPU will be used):
 
 ~~~
 make train-cifar
 ~~~
-
 ### Output fields
 
-Output will be in Comma Separated Values (CSV) format, fields desciption:
+The output is in a Comma Separated Values (CSV) format, as depicted below:
 
 | Record Type                 | type | epoch     | start     | loading            | duration    | value1           | value2                 | Note                                          |
 | --------------------------- | ---- | --------- | --------- | ------------------ | ----------- | ---------------- | ---------------------- | --------------------------------------------- |
@@ -39,6 +44,4 @@ Output will be in Comma Separated Values (CSV) format, fields desciption:
 | Validation time per epoch   | 1    | epoch No. | timestamp | data loading time  | total time  | accuracy         | top5* accuracy         | *Correct if the label is in top5 predictions. |
 | Training time per batch     | 2    | epoch No. | timestamp | data loading time* | total time* | batch No.        | total batches in epoch | *Since epoch start                            |
 
-Note:
-
-1. The unit of duration is second. 1.023456 = 1 second 23 milliseconds 456 microseconds
+Note: The unit of duration is second. 1.023456 = 1 second 23 milliseconds 456 microseconds
